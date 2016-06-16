@@ -21,6 +21,14 @@ class User(db.Model):
     role = db.Column(types.Enum('user', 'admin'), default='user')
 
     def __init__(self, email, password):
+        """User object Initialization
+
+        inputs
+        ------------
+        email : string_type
+        password : string_type
+
+        """
         self.email = email
         self.password = self.hash_password(password)
 
