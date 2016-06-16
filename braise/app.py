@@ -6,6 +6,7 @@ from flask.ext.cors import CORS
 from models.db import db
 from controllers.health import Health
 from controllers.classify_article import ClassifyArticle
+from controllers.users import UserController, UserAuthController
 import config
 
 ##
@@ -26,8 +27,9 @@ db.init_app(app)
 ##
 ## API Routing
 ##
-api.add_resource(Health, '/health')
-api.add_resource(ClassifyArticle, '/classify-article')
+api.add_resource(Health, '/api/health')
+api.add_resource(ClassifyArticle, '/api/classify-article')
+api.add_resource(UserController, '/api/users')
 
 
 ##
