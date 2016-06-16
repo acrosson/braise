@@ -31,11 +31,15 @@ def parseint(string):
 
 class DocumentController(Resource):
 
-    """A handler for all /user api requests
+    """A handler for all /documents api requests
 
     methods
     ---------------
-    post : creates user, or returns false if user already exists
+    get : return list of documents paged with page number and min_id
+            p : page number
+            min_id : the minimum document number
+
+    post : creates document, or returns false if doc already exists
 
     """
 
