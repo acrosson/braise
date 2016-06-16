@@ -2,32 +2,56 @@ import requests, json
 from flask import jsonify, g
 from flask_restful import fields, marshal_with, reqparse, request, Resource
 from models.documents import Document
+from models.classifications import Classification
 from utils.auth import login_required
 
-post_parser = reqparse.RequestParser()
-post_parser.add_argument(
+document_parser = reqparse.RequestParser()
+document_parser.add_argument(
     'title',
     dest='title', location='form',
     required=True, help='The title is invalid',
 )
-post_parser.add_argument(
+document_parser.add_argument(
     'summary',
     dest='summary', location='form',
     required=True, help='The summary is invalid',
 )
-post_parser.add_argument(
+document_parser.add_argument(
     'url',
     dest='url', location='form',
     required=True, help='The url is invalid',
 )
-post_parser.add_argument(
+document_parser.add_argument(
     'raw_filename',
     dest='raw_filename', location='form',
     required=True, help='The raw filename is invalid',
 )
 
+classify_parser = reqparse.RequestParser()
+classify_parser.add_argument(
+    'document_id', type=int,
+    dest='document_id', location='form',
+    required=True, help='The document_id is invalid',
+)
+classify_parser.add_argument(
+    'prediction_id', type=int,
+    dest='prediction_id', location='form',
+    required=True, help='The prediction_id is invalid',
+)
+classify_parser.add_argument(
+    'class_label', type=int,
+    dest='class_label', location='form',
+    required=True, help='The class_label is invalid',
+)
+
+
 def parseint(string):
     return int(string) if str(string).isdigit() else 0
+
+def abort_if_doc_doesnt_exist(document_id):
+    return
+    # if document not in TODOS:
+        # abort(404, message="Document {} doesn't exist".format(todo_id))
 
 class DocumentController(Resource):
 
@@ -62,7 +86,7 @@ class DocumentController(Resource):
 
     # @login_required('admin')
     def post(self):
-        args = post_parser.parse_args()
+        args = document_parser.parse_args()
         document = Document(args.title,
                             args.summary,
                             args.url,
@@ -74,5 +98,30 @@ class DocumentController(Resource):
             data = {'document_id': document.id}
             return {'success': True, 'message':
                     'Message successfully submitted', 'data': data}
+        except ValueError as e:
+            return {'success': False, 'message': str(e), 'data': None}
+
+class DocumentClassifyController(Resource):
+
+    """A handler for all /documents/<document_id>/classify api requests
+
+    methods
+    ---------------
+    post : classified a document
+
+    """
+
+    def post(self, document_id):
+        args = classify_parser.parse_args()
+        classification = Classification(document_id,
+                                        args.prediction_id,
+                                        args.class_label)
+
+        # Save to db
+        try:
+            classification.save()
+            data = {'classification_id': classification.id}
+            return {'success': True, 'message':
+                    'Classification successfully submitted', 'data': data}
         except ValueError as e:
             return {'success': False, 'message': str(e), 'data': None}
