@@ -15,7 +15,9 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     created_on = db.Column(db.DateTime, server_default=db.func.now())
-    updated_on = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+    updated_on = db.Column(db.DateTime,
+                           server_default=db.func.now(),
+                           onupdate=db.func.now())
     email = db.Column(db.String(255), index=True, unique=True)
     password_hash = db.Column(db.String(64))
     role = db.Column(types.Enum('user', 'admin'), default='user')
