@@ -7,6 +7,9 @@ from models.db import db
 from controllers.health import Health
 from controllers.classify_article import ClassifyArticle
 from controllers.users import UserController, UserAuthController
+from controllers.documents import DocumentController,\
+                                DocumentClassifyController
+from controllers.predictions import PredictionController
 import config
 
 ##
@@ -28,9 +31,11 @@ db.init_app(app)
 ## API Routing
 ##
 api.add_resource(Health, '/api/health')
-api.add_resource(ClassifyArticle, '/api/classify-article')
 api.add_resource(UserController, '/api/users')
-
+api.add_resource(DocumentController, '/api/documents')
+api.add_resource(DocumentClassifyController,
+                 '/api/documents/<document_id>/classify')
+api.add_resource(PredictionController, '/api/predictions')
 
 ##
 ## Template Rendering
