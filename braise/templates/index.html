@@ -1,0 +1,54 @@
+<html>
+<head>
+  <title>Braise</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:600,400,300&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script type="text/javascript">
+    function classify_article(class_type, id) {
+      hide_footer(id);
+      $.post('/classify-article', {
+        id: id,
+        class_type: class_type
+      }, function(data) {
+        console.log(data);
+      });
+    }
+
+    function hide_footer(id) {
+      var div = document.getElementById('article_vote.'+id);
+      div.style.display = 'none';
+      var footer = document.getElementById('article_footer.'+id);
+      footer.style.backgroundColor = '#45a3d1';
+    }
+
+    function show_footer(id) {
+      var div = document.getElementById('article_vote.'+id);
+      div.style.display = 'block';
+      var footer = document.getElementById('article_footer.'+id);
+      footer.style.backgroundColor = '#FFF';
+    }
+  </script>
+</head>
+
+<body>
+  <div class="wrapper">
+    <h1>Braise</h1>
+    {% for article in articles %}
+      <div class="article">
+        <div class="title">{{ article.title }}</div>
+        <div class="body">{{ article.body }}</div>
+        <div class="footer" id="article_footer.{{ article.id }}">
+          <div id="article_vote.{{ article.id }}">
+            <a href="javascript:void(0);" onclick="classify_article(0, {{ article.id }})">Dislike</a>
+            <a href="javascript:void(0);" onclick="classify_article(1, {{ article.id }})">Like</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+    <button onclick="javascript:location.reload(true)">Learn</button>
+
+  </div>
+</body>
+</html>
