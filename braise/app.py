@@ -10,6 +10,7 @@ from controllers.users import UserController, UserAuthController
 from controllers.documents import DocumentController,\
                                 DocumentClassifyController
 from controllers.predictions import PredictionController
+from controllers.news import NewsController
 import config
 
 ##
@@ -36,6 +37,7 @@ api.add_resource(DocumentController, '/api/documents')
 api.add_resource(DocumentClassifyController,
                  '/api/documents/<document_id>/classify')
 api.add_resource(PredictionController, '/api/predictions')
+api.add_resource(NewsController, '/api/news')
 
 ##
 ## Template Rendering
