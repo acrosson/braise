@@ -25,6 +25,7 @@ class Prediction(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
     onboard = db.Column(db.Boolean, default=False)
+    viewed_on = db.Column(db.DateTime)
 
     def __init__(self, user_id, document_id, onboard=False):
         """Prediction object Initialization
@@ -59,4 +60,5 @@ class Prediction(db.Model):
             'user_id': self.user_id,
             'document_id': self.document_id,
             'onboard': self.onboard,
+            'viewed_on': self.viewed_on,
         }

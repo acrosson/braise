@@ -1,4 +1,4 @@
-from models.db import db
+from db import db
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
 from passlib.apps import custom_app_context as pwd_context
@@ -24,8 +24,9 @@ class Document(db.Model):
     summary = db.Column(db.String(500))
     url = db.Column(db.String(300))
     raw_filename = db.Column(db.String(100))
+    vector_id = db.Column(db.String(100))
 
-    def __init__(self, title, summary, url, raw_filename):
+    def __init__(self, title, summary, url, raw_filename, vector_id=None):
         """Document object Initialization
 
         inputs
@@ -41,6 +42,7 @@ class Document(db.Model):
         self.summary = summary
         self.url = url
         self.raw_filename = raw_filename
+        self.vector_id = vector_id
 
     def save(self):
         """Saves Document to Database"""
@@ -59,5 +61,6 @@ class Document(db.Model):
             'title': self.title,
             'summary': self.summary,
             'url': self.url,
-            'raw_filename': self.raw_filename
+            'raw_filename': self.raw_filename,
+            'vector_id': self.vector_id
         }

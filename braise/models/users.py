@@ -21,6 +21,7 @@ class User(db.Model):
     email = db.Column(db.String(255), index=True, unique=True)
     password_hash = db.Column(db.String(64))
     role = db.Column(types.Enum('user', 'admin'), default='user')
+    busy = db.Column(db.Boolean, default=False) 
 
     def __init__(self, email, password):
         """User object Initialization
