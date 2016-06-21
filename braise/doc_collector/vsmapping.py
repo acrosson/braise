@@ -80,7 +80,7 @@ class VSMapping(object):
 
         # Generate Vector Id and Persist to Redis
         v_id = self._generate_id()
-        self.store_val(v_id, doc_vector)
+        self.store_val(v_id, pickle.dumps(doc_vector))
 
         return v_id, doc_vector
 
