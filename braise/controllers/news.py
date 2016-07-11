@@ -2,6 +2,7 @@ import requests, json
 from flask import jsonify, g
 from flask_restful import fields, marshal_with, reqparse, request, Resource
 from models.predictions import Prediction
+from models.documents import Document
 from models.users import User
 from utils.auth import login_required
 from tasks import generate_pred, set_preds_as_viewed
@@ -41,9 +42,9 @@ class NewsController(Resource):
             if user:
                 if user.busy == False:
                     # Set user busy to True to prevent duplicate preds
-                    user.busy = True
+                    #user.busy = True
                     try:
-                        user.save()
+                        #user.save()
 
                         # Add GeneratePrediction queue
                         generate_pred.delay(1)
@@ -55,6 +56,17 @@ class NewsController(Resource):
         # Set predictions to viewed
         set_preds_as_viewed.delay([p.to_dict() for p in predictions])
 
+        doc_ids = [p.to_dict()['document_id'] for p in predictions]
+
+        preds = [p.to_dict() for p in predictions]
+
+        docs = [d.to_dict() for d in Document.query.filter(Document.id.in_(doc_ids))]
+        for i, d in enumerate(docs):
+            d['random_pred'] = preds[i]['random_pred']
+
+        for i, doc in enumerate(docs):
+            docs[i]['prediction_id'] = preds[i]['id']
+
         return {'success': True, 'message': '',
-                'data': [p.to_dict() for p in predictions]}
+                'data': docs}
 

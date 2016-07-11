@@ -3,14 +3,14 @@
   <title>Braise</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:600,400,300&subset=latin,latin-ext" rel="stylesheet" type="text/css">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="/static/js/jquery-3.0.0.min.js"></script>
   <link rel="stylesheet" href="/static/css/main.css">
   <script type="text/javascript">
-    function classify_article(class_type, id) {
+    function classify_article(class_type, id, pred_id) {
       hide_footer(id);
-      $.post('/classify-article', {
-        id: id,
-        class_type: class_type
+      $.post('/api/documents/' + id + '/classify', {
+        prediction_id: pred_id,
+        class_label: class_type,
       }, function(data) {
         console.log(data);
       });
@@ -35,14 +35,19 @@
 <body>
   <div class="wrapper">
     <h1>Braise</h1>
+    {% if generating  %}
+        <h3>Be patient</h3>
+        <p>We're working on new recommendations. Click learn to see if theyre ready!</p>
+    {% endif %}
     {% for article in articles %}
       <div class="article">
         <div class="title">{{ article.title }}</div>
-        <div class="body">{{ article.body }}</div>
+        <div class="article_pred_{{ article.random_pred }}"></div>
+        <div class="body">{{ article.summary }}</div>
         <div class="footer" id="article_footer.{{ article.id }}">
           <div id="article_vote.{{ article.id }}">
-            <a href="javascript:void(0);" onclick="classify_article(0, {{ article.id }})">Dislike</a>
-            <a href="javascript:void(0);" onclick="classify_article(1, {{ article.id }})">Like</a>
+            <a href="javascript:void(0);" onclick="classify_article(0, {{ article.id }}, {{ article.prediction_id }})">Dislike</a>
+            <a href="javascript:void(0);" onclick="classify_article(1, {{ article.id }}, {{ article.prediction_id }})">Like</a>
           </div>
         </div>
       </div>
