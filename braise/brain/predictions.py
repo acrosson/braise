@@ -1,9 +1,11 @@
 from models.predictions import Prediction
 from models.users import User
 from models.documents import Document
+from models.classifications import Classification
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
+from doc_generator import DocGenerator
 import config
 import datetime
 import random
@@ -12,6 +14,8 @@ engine = create_engine(config.DB_URI)
 Session = sessionmaker(bind=engine)
 session = Session()
 session._model_changes = {}
+
+dg = DocGenerator()
 
 def save_model(model):
     """Saves model to db"""
@@ -31,9 +35,12 @@ def generate_rand_nums(lst):
     lst = [item for i, item in enumerate(lst) if i in rand_idxs]
     return lst
 
-def create_prediction(user_id, doc_id):
+def create_prediction(user_id, doc_id, rand_v_ids, v_id):
     """Creates a Prediction object and stores in database"""
-    prediction = Prediction(user_id, doc_id)
+    random_pred = False
+    if v_id in rand_v_ids:
+        random_pred = True
+    prediction = Prediction(user_id, doc_id, random_pred=random_pred)
     try:
         save_model(prediction)
     except ValueError as e:
@@ -41,22 +48,36 @@ def create_prediction(user_id, doc_id):
 
 
 def generate_pred(user_id):
-    """Generates user predictions randomly"""
+    """Generates user predictions """
     user = session.query(User).filter(User.id == user_id).first()
 
     # Get documents the user has not yet seen 
     hist_preds = session.query(Prediction.document_id)\
                     .filter(Prediction.user_id == user_id)
     docs = session.query(Document).filter(Document.id.notin_(hist_preds))
+    vector_ids = [d.to_dict()['vector_id'] for d in docs]
+
     doc_ids = [d.to_dict()['id'] for d in docs]
 
-    # Randomly pick 5 documents that haven't been seen yet
-    chosen_doc_ids = generate_rand_nums(doc_ids)
+    classifs = session.query(Document, Classification)\
+                    .filter(Document.id == Classification.document_id).all()
+    hist_v_ids = [c[0].to_dict()['vector_id'] for c in classifs]
+    rand_v_ids = generate_rand_nums(vector_ids)
+
+    try:
+        dg.fit(user_id, hist_v_ids)
+        top_v_ids = dg.predict(user_id, vector_ids, rand_v_ids)
+    except ValueError as e:
+        print str(e)
+        top_v_ids = rand_v_ids
+
+    # TODO : Add comment
+    chosen_doc_ids = [d.to_dict()['id'] for d in docs if d.to_dict()['vector_id'] in top_v_ids]
 
     if user:
         # Create predictions using generated document ids
-        for doc_id in chosen_doc_ids:
-            create_prediction(user.id, doc_id)
+        for i, doc_id in enumerate(chosen_doc_ids):
+            create_prediction(user.id, doc_id, rand_v_ids, top_v_ids[i])
         
         # Update user model, set busy to False 
         user.busy = False

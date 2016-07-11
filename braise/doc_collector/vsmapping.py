@@ -1,8 +1,19 @@
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+#from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from text_transformer import CountVectorizer, TfidfTransformer
 import redis
 import cPickle as pickle
 import config
 import utils
+from models.documents import Document
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import IntegrityError
+import config
+
+engine = create_engine(config.DB_URI)
+Session = sessionmaker(bind=engine)
+session = Session()
+session._model_changes = {}
 
 class VSMapping(object):
 
@@ -17,7 +28,7 @@ class VSMapping(object):
     def __init__(self):
         """Initialization"""
         self.count_vect = CountVectorizer()
-        self.tfidf = TfidfTransformer(norm="l2")
+        self.tfidf = TfidfTransformer()
         self.feature_names = []
 
         # Initialize redis connection
@@ -25,10 +36,10 @@ class VSMapping(object):
                                    port=config.REDIS_PORT,
                                    db=config.REDIS_DB)
 
-    def partial_fit(self):
-        """Partially fit the count_vect and tfidf transformer"""
-        # TODO : Complete this partial fit
-        return
+    def partial_fit(self, doc):
+        """Partially fit the tfidf transformer"""
+        new_vect = self.count_vect.transform([doc])[0]
+        self.tfidf.partial_fit(new_vect)
 
     def batch_fit(self, data):
         """Batch fit the count_vect and tfidf transformer
@@ -43,14 +54,14 @@ class VSMapping(object):
         # and persist freq_term_matrix to memory
         self.count_vect.fit(data)
         freq_term_matrix = self.count_vect.transform(data)
-        self.store_val('count_vect', pickle.dumps(self.count_vect))
+        self.store_val('count_vect', self.count_vect)
 
         # Fit the tf-idf model with the matrix
         self.tfidf.fit(freq_term_matrix)
-        self.store_val('tfidf', pickle.dumps(self.tfidf))
+        self.store_val('tfidf', self.tfidf)
 
         # Store the feature names for latter use
-        self.feature_names = self.count_vect.get_feature_names()
+        self.feature_names = self.count_vect.feature_names
         self.store_val('feature_names', self.feature_names)
 
     def transform(self, doc):
@@ -75,12 +86,11 @@ class VSMapping(object):
         """
         doc_freq_term_matrix = self.count_vect.transform([doc])
         doc_tfidf_matrix = self.tfidf.transform(doc_freq_term_matrix)
-        doc_dense = doc_tfidf_matrix.todense()
-        doc_vector = doc_dense.tolist()[0]
+        doc_vector = doc_tfidf_matrix.tolist()[0]
 
         # Generate Vector Id and Persist to Redis
         v_id = self._generate_id()
-        self.store_val(v_id, pickle.dumps(doc_vector))
+        self.store_val(v_id, doc_vector)
 
         return v_id, doc_vector
 
@@ -90,11 +100,15 @@ class VSMapping(object):
 
     def store_val(self, v_id, v):
         """Writes key, value to redis db"""
-        self.r.set(v_id, v)
+        self.r.set(v_id, pickle.dumps(v))
 
     def retreive_val(self, v_id):
         """Reads key, value from redis db"""
-        return self.r.get(v_id)
+        val = self.r.get(v_id)
+        if val:
+            return pickle.loads(val)
+        else:
+            return None
 
     def load_from_mem(self):
         """Loads the count vectorizer, tfidf transformer, and feature names
@@ -105,14 +119,12 @@ class VSMapping(object):
         tfidf = self.retreive_val('tfidf')
         feature_names = self.retreive_val('feature_names')
         if not count_vect or not tfidf or not feature_names:
-            raise ValueError('Unable to load from Memory.')
+            #raise ValueError('Unable to load from Memory.')
+            return
 
-        self.count_vect = pickle.loads(count_vect)
-        self.tfidf = pickle.loads(tfidf)
+        self.count_vect = count_vect
+        self.tfidf = tfidf
         self.feature_names = feature_names
 
-
-if __name__ == '__main__':
-    vsm = VSMapping()
-    print vsm._generate_id()
-    pass
+    def load_from_db(self):
+        pass

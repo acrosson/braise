@@ -2,6 +2,7 @@ import cPickle as pickle
 from scipy import spatial
 from sklearn.cluster import MiniBatchKMeans
 from doc_collector.vsmapping import VSMapping
+import utils
 
 class DocGenerator(object):
 
@@ -83,15 +84,15 @@ class DocGenerator(object):
         # Only those who's similarity is greater than 0.20 are used
         scores = [(self._compute_cosine(self.users[user_id].cluster_centers_[c],
                                        vectors[i]), i) for i, c in enumerate(preds)]
-        scores = sorted(scores, reverse=True, key=get_key)
-        top_v_ids = [v_ids[i] for s, i in scores if s >= 0.20]
+        scores = sorted(scores, reverse=True, key=utils.get_key)
+        top_v_ids = [v_ids[i] for s, i in scores if s >= 0.20][:5]
 
         # If the predicted vectors is less than five, choose randomly for the
         # the remaining
         if len(top_v_ids) < 5:
             top_v_ids += rand_v_ids[:5-len(top_v_ids)]
 
-        print top_v_ids
+        return top_v_ids
 
     def load_from_disk(self):
         pass

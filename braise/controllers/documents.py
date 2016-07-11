@@ -29,11 +29,6 @@ document_parser.add_argument(
 
 classify_parser = reqparse.RequestParser()
 classify_parser.add_argument(
-    'document_id', type=int,
-    dest='document_id', location='form',
-    required=True, help='The document_id is invalid',
-)
-classify_parser.add_argument(
     'prediction_id', type=int,
     dest='prediction_id', location='form',
     required=True, help='The prediction_id is invalid',
