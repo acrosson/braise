@@ -12,6 +12,7 @@ from controllers.documents import DocumentController,\
 from controllers.predictions import PredictionController
 from controllers.news import NewsController
 import config
+import requests
 
 ##
 ## Initialization
@@ -48,7 +49,15 @@ articles = [
 ]
 @app.route('/')
 def hello(name=None):
-    return render_template('index.html', articles=articles)
+    r = requests.get('http://localhost:5000/api/news')
+    articles = r.json()['data']
+    generating = None
+    if 'generating' in articles:
+        articles = []
+        generating = True
+    return render_template('index.html',
+                           articles=articles,
+                           generating=generating)
 
 ##
 ## Run App
