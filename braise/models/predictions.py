@@ -26,8 +26,9 @@ class Prediction(db.Model):
     document_id = db.Column(db.Integer, db.ForeignKey('documents.id'))
     onboard = db.Column(db.Boolean, default=False)
     viewed_on = db.Column(db.DateTime)
+    random_pred = db.Column(db.Boolean, default=False)
 
-    def __init__(self, user_id, document_id, onboard=False):
+    def __init__(self, user_id, document_id, onboard=False, random_pred=False):
         """Prediction object Initialization
 
         inputs
@@ -42,6 +43,7 @@ class Prediction(db.Model):
         self.user_id = user_id
         self.document_id = document_id
         self.onboard = onboard
+        self.random_pred = random_pred
 
     def save(self):
         """Saves Predictions to Database"""
@@ -60,5 +62,6 @@ class Prediction(db.Model):
             'user_id': self.user_id,
             'document_id': self.document_id,
             'onboard': self.onboard,
-            'viewed_on': self.viewed_on,
+            'viewed_on': str(self.viewed_on),
+            'random_pred': int(self.random_pred)
         }
