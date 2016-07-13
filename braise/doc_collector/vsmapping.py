@@ -34,7 +34,8 @@ class VSMapping(object):
         # Initialize redis connection
         self.r = redis.StrictRedis(host=config.REDIS_HOST,
                                    port=config.REDIS_PORT,
-                                   db=config.REDIS_DB)
+                                   db=config.REDIS_DB,
+				   password=config.REDIS_AUTH)
 
     def partial_fit(self, doc):
         """Partially fit the tfidf transformer"""
