@@ -11,7 +11,7 @@ celery -A tasks worker --loglevel=info
 from brain import predictions
 from celery import Celery
 
-app = Celery('tasks', broker='redis://localhost:6379/2')
+app = Celery('tasks', broker='redis://172.17.0.2:6379/0')
 
 @app.task
 def generate_pred(user_id):

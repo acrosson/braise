@@ -5,7 +5,6 @@ from flask_restful import Api
 from flask.ext.cors import CORS
 from models.db import db
 from controllers.health import Health
-from controllers.classify_article import ClassifyArticle
 from controllers.users import UserController, UserAuthController
 from controllers.documents import DocumentController,\
                                 DocumentClassifyController
@@ -67,4 +66,4 @@ if __name__ == '__main__':
         with app.app_context():
             print 'creating db'
             db.create_all()
-    app.run(debug=True, threaded=True)
+    app.run(debug=True, threaded=True, host='0.0.0.0')
