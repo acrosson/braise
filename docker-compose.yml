@@ -1,0 +1,20 @@
+app:
+  restart: always
+  build: .
+  dockerfile: Dockerfile.app
+  command: ./braise/run_app.sh
+  ports:
+    - "80:5000"
+  links:
+    - "redis: redis"
+redis:
+  restart: always
+  build: .
+  dockerfile: Dockerfile.redis
+worker:
+  restart: always
+  build: .
+  dockerfile: Dockerfile.app
+  command: ./braise/run_worker.sh
+  links:
+    - "redis: redis"
